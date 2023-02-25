@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  app:
+    build: .
+#    image: event
+    ports:
+      - 8000:80
+    environment:
+      - DB_HOST=event_db
+      - DB_PORT=5432
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+
+  event_db:
+#    container_name: "event_db"
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - 6432:5432
