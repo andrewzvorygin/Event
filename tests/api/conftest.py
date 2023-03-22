@@ -9,6 +9,8 @@ from application.app import app
 from application.db import get_session
 from application.settings import db_settings
 
+from psycopg2.extras import RealDictCursor
+
 
 @pytest.fixture(scope="session", autouse=True)
 def migrated_postgres(alembic_config):
@@ -42,3 +44,13 @@ async def client():
     app.dependency_overrides[get_session] = _get_test_db
     with TestClient(app) as test_client:
         yield test_client
+
+
+@pytest.fixture
+def get_user_from_db(psycopg_pool):
+    def _get_user_from_db(user_id: int):
+        with psycopg_pool as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute("""SELECT * FROM users WHERE user_id=%(user_id)s""", {'user_id': user_id})
+                return cursor.fetchone()
+    return _get_user_from_db

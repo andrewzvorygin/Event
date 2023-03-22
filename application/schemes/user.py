@@ -30,8 +30,12 @@ class UserCreate(BaseModel):
         return value
 
 
-class UserShow(UserCreate):
-    user_id: uuid.UUID
+class UserShow(BaseModel):
+    name: str
+    surname: str
+    email: EmailStr
+    user_uuid: uuid.UUID
+    user_id: int
 
     class Config:
         orm_mode = True

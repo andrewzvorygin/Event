@@ -1,3 +1,4 @@
+"""Модуль для описания ошибок"""
 from fastapi import HTTPException
 from starlette import status
 

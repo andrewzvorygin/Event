@@ -1,7 +1,9 @@
 import uuid
+from contextlib import contextmanager
 
 import pytest
 from sqlalchemy_utils import create_database, drop_database
+import psycopg2
 
 from application.utils.pg import make_alembic_config
 from application.settings import db_settings as db_set
@@ -31,3 +33,11 @@ def alembic_config(postgres):
     Создает объект с конфигурацией для alembic, настроенный на временную БД.
     """
     return make_alembic_config(postgres)
+
+
+@pytest.fixture
+@contextmanager
+def psycopg_pool():
+    with psycopg2.connect(db_set.get_url_without_driver(is_test=True)) as connection:
+        yield connection
+

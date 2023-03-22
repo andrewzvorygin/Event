@@ -32,6 +32,10 @@ class SettingsDB(BaseSettings):
     def _get_url(*args, user, password, host, port, db_name, driver, is_test=False):
         return f'postgresql+{driver}://{user}:{password}@{host}:{port}/{db_name}{".pytest" if is_test else ""}'
 
+    @staticmethod
+    def _get_url_without_driver(*args, user, password, host, port, db_name, is_test=False):
+        return f'postgresql://{user}:{password}@{host}:{port}/{db_name}{".pytest" if is_test else ""}'
+
     def get_async_pg_url(self, user=None, password=None, host=None, port=None, db_name=None, is_test=False):
         return self._get_url(
             driver='asyncpg',
@@ -46,6 +50,16 @@ class SettingsDB(BaseSettings):
     def get_psycopg_pg_url(self, user=None, password=None, host=None, port=None, db_name=None, is_test=False):
         return self._get_url(
             driver='psycopg2',
+            is_test=is_test,
+            user=user or self.user,
+            host=host or self.host,
+            port=port or self.port,
+            db_name=db_name or self.name,
+            password=password or self.password
+        )
+
+    def get_url_without_driver(self, user=None, password=None, host=None, port=None, db_name=None, is_test=False):
+        return self._get_url_without_driver(
             is_test=is_test,
             user=user or self.user,
             host=host or self.host,
