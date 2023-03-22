@@ -18,7 +18,7 @@ async def test_create_user(client):
     assert payload['name'] == response.json()['name']
     assert payload['surname'] == response.json()['surname']
     assert payload['email'] == response.json()['email']
-    # assert payload['password'] != response.json()['password']
+    assert payload['password'] != response.json()['password']
     assert response.json()['user_id']
 
     response: Response = client.post('/auth/registration/', data=json.dumps(payload))
