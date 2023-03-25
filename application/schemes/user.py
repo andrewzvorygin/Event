@@ -39,3 +39,25 @@ class UserShow(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserRead(BaseModel):
+    name: str
+    surname: str
+    email: EmailStr
+    user_uuid: uuid.UUID
+    user_id: int
+    is_active: bool
+    is_admin: bool
+
+    class Config:
+        orm_mode = True
+
+
+class UserFull(UserRead):
+    password: str

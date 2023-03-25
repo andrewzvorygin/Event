@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import pytest
 import pytest_asyncio
 from alembic.command import upgrade
@@ -29,9 +31,10 @@ async def _get_test_db():
         test_async_session = sessionmaker(
             test_engine, expire_on_commit=False, class_=AsyncSession
         )
-        yield test_async_session()
+        session: AsyncSession = test_async_session()
+        yield session
     finally:
-        pass
+        await session.close()
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -51,6 +54,19 @@ def get_user_from_db(psycopg_pool):
     def _get_user_from_db(user_id: int):
         with psycopg_pool as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-                cursor.execute("""SELECT * FROM users WHERE user_id=%(user_id)s""", {'user_id': user_id})
+                cursor.execute("""SELECT * FROM "User" WHERE user_id=%(user_id)s""", {'user_id': user_id})
                 return cursor.fetchone()
     return _get_user_from_db
+
+
+@pytest.fixture
+def get_refresh_token_from_db(psycopg_pool):
+    def _get_refresh_token_from_db(refresh_session: str):
+        with psycopg_pool as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute(
+                    """SELECT * FROM "RefreshToken" WHERE refresh_session::text=%(refresh_session)s""",
+                    {'refresh_session': refresh_session}
+                )
+                return cursor.fetchone()
+    return _get_refresh_token_from_db

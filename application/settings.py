@@ -11,6 +11,8 @@ PATH_TO_ENV = os.path.join(ROOT_PATH, '.env')
 class SettingsAPI(BaseSettings):
     host: str = 'localhost'
     port: int = 80
+    secret_key_solt: str
+    secret_key: str
 
     class Config:
         env_prefix = 'api_'
