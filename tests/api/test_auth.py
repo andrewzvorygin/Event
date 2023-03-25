@@ -84,3 +84,30 @@ async def test_login(client, get_refresh_token_from_db):
     assert response.json() == {'detail': 'Неверный логин или пароль'}
     assert response.cookies.get('refresh_token') is None
 
+
+@pytest.mark.asyncio
+async def test_is_auth(client):
+    payload = {
+        'name': 'Вася',
+        'surname': 'Пупкин',
+        'email': 'is_auth@mail.ru',
+        'password': 'user123qwe'
+    }
+    client.post('/auth/registration/', content=json.dumps(payload))
+    response_login: Response = client.post(
+        '/auth/login/',
+        content=json.dumps({'email': payload['email'], 'password': payload['password']})
+    )
+    resp_is_auth: Response = client.get(
+        '/auth/isAuth/',
+        headers={'access-token': response_login.json()['access_token']}
+    )
+    assert resp_is_auth.status_code == 200
+    assert resp_is_auth.json()['user_id']
+
+    resp_is_auth: Response = client.get(
+        '/auth/isAuth/',
+        headers={'access-token': 'bad_token'}
+    )
+    assert resp_is_auth.status_code == 401
+    assert resp_is_auth.json() == {'detail': "Невалидный токен"}

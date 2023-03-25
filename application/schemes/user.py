@@ -61,3 +61,14 @@ class UserRead(BaseModel):
 
 class UserFull(UserRead):
     password: str
+
+
+class UserFromToken(BaseModel):
+    user_id: int
+    email: EmailStr
+    user_uuid: uuid.UUID
+    is_admin: bool
+    is_active: bool = True
+
+    class Config:
+        orm_mode = True

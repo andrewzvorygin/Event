@@ -1,6 +1,8 @@
 from datetime import timedelta, datetime
 
-from jose import jwt
+from fastapi import Header
+from jose import jwt, JWTError
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,7 +10,7 @@ from application import schemes as sh
 
 from . import storage as st
 
-from .http_exception import USER_ALREADY_EXIST, INCORRECT_LOGIN_OR_PASSWORD_EXCEPTION
+from .http_exception import USER_ALREADY_EXIST, INCORRECT_LOGIN_OR_PASSWORD_EXCEPTION, CREDENTIALS_EXCEPTION
 from application.utils.hashing import get_password_hash, verify_password
 from application.utils.hashing import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, REFRESH_TOKEN_EXPIRE_MINUTES
 
@@ -55,7 +57,11 @@ async def get_access_token(user: sh.UserFull) -> str:
 async def get_token(user: sh.UserFull, time_expires: int) -> str:
     token_expires = timedelta(minutes=time_expires)
     data_to_token = dict(
-        user_id=user.user_id, email=user.email, uuid=str(user.user_uuid), is_admin=user.is_admin
+        user_id=user.user_id,
+        email=user.email,
+        user_uuid=str(user.user_uuid),
+        is_admin=user.is_admin,
+        is_active=user.is_active
     )
     token = create_token(
         data=data_to_token, expires_delta=token_expires
@@ -70,3 +76,13 @@ def create_token(data: dict, expires_delta: timedelta) -> str:
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, api_settings.secret_key_solt, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+async def get_current_user(access_token: str = Header()) -> sh.UserFromToken:
+    """Получить текущего пользователя"""
+    try:
+        payload = jwt.decode(access_token, api_settings.secret_key_solt, algorithms=[ALGORITHM])
+        user = sh.UserFromToken(**payload)
+    except (JWTError, ValidationError):
+        raise CREDENTIALS_EXCEPTION
+    return user

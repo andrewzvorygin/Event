@@ -12,3 +12,8 @@ INCORRECT_LOGIN_OR_PASSWORD_EXCEPTION = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Неверный логин или пароль"
 )
+
+CREDENTIALS_EXCEPTION = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Невалидный токен"
+)
